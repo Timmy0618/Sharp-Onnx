@@ -1,0 +1,28 @@
+# 編譯輸出目錄
+bin/
+obj/
+*.exe
+*.tif
+*.onnx
+*.dll
+*.pdb
+*.cache
+*.ilk
+*.lib
+*.ndk
+*.so
+*.a
+*.o
+*.pyc
+*.pch
+*.mod
+*.cmd
+*.suo
+*.apk
+*.aps
+*.jar
+*.zip
+*.log
+*.userosactivesettings.json
+# User-generated comments
+# Subversion_ignore rules
