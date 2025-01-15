@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using Microsoft.ML.OnnxRuntime;
@@ -36,13 +35,8 @@ namespace OnnxLibrary
             _classMapping = LoadClassMapping(yamlPath);
         }
 
-        public (float[] scores, string predictedClassName) Predict(
-            string imagePath,
-            int targetWidth = 224,
-            int targetHeight = 224)
+        public (float[] scores, string predictedClassName) PredictFromTensor(DenseTensor<float> inputTensor)
         {
-            var inputTensor = PreprocessImage(imagePath, targetWidth, targetHeight);
-
             var inputName = _session.InputMetadata.Keys.First();
             var outputName = _session.OutputMetadata.Keys.First();
 
@@ -86,38 +80,6 @@ namespace OnnxLibrary
                 scores[i] /= sumExp;
             }
             return scores;
-        }
-
-        private DenseTensor<float> PreprocessImage(string imagePath, int width, int height)
-        {
-            using (var original = new Bitmap(imagePath))
-            using (var resized = new Bitmap(original, new Size(width, height)))
-            {
-                float[] mean = { 0.485f, 0.456f, 0.406f };
-                float[] std = { 0.229f, 0.224f, 0.225f };
-
-                float[] data = new float[1 * 3 * height * width];
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        Color pixel = resized.GetPixel(x, y);
-
-                        float r = (pixel.R / 255.0f - mean[0]) / std[0];
-                        float g = (pixel.G / 255.0f - mean[1]) / std[1];
-                        float b = (pixel.B / 255.0f - mean[2]) / std[2];
-
-                        data[0 * (height * width) + y * width + x] = r;
-                        data[1 * (height * width) + y * width + x] = g;
-                        data[2 * (height * width) + y * width + x] = b;
-                    }
-                }
-
-                var shape = new int[] { 1, 3, height, width };
-                var inputTensor = new DenseTensor<float>(data, shape);
-                return inputTensor;
-            }
         }
 
         private float[] TensorToArray(Tensor<float> tensor)
