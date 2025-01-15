@@ -8,7 +8,9 @@ This project is a .NET application that utilizes an ONNX model to classify image
 - **ONNX Runtime NuGet Package**: Ensure ONNX Runtime is installed as a dependency.
 - **YAML configuration file**: A `.yaml` file mapping class indices to class names.
 - **ONNX model file**: The ONNX model used for inference.
+- **ONNX CUDA compatible**: [See here](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)
 - An image file for prediction.
+
 
 ---
 
