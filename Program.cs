@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -45,8 +44,7 @@ namespace OnnxLibrary
                 {
                     try
                     {
-                        var bitmap = new Bitmap(path);
-                        var tensor = ImagePreprocessor.PreprocessImage(bitmap, 224, 224);
+                        var tensor = ImagePreprocessor.PreprocessImage(path, 224, 224);
                         preprocessedImages.Add((Path.GetFileName(path), tensor));
                     }
                     catch (Exception ex)
