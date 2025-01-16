@@ -10,7 +10,9 @@ This project is a .NET application that utilizes an ONNX model to classify image
 - **ONNX model file**: The ONNX model used for inference.
 - **ONNX CUDA compatible**: [See here](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)
 - An image file for prediction.
-
+- **ONNX Runtime Version Compatibility**: Currently using **ONNX Runtime 1.18.0**, which requires:
+  - **CUDA 12.x**
+  - **cuDNN 8.x**
 
 ---
 
