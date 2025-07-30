@@ -31,6 +31,33 @@ A .NET library for unified processing of YOLO v11 image classification and objec
 
 ---
 
+## ⚡ Quick Start
+
+### Build Commands Summary
+
+| Purpose | Command | Output |
+|---------|---------|--------|
+| **Executable** (for testing) | `dotnet build --configuration Release --framework net472` | `OnnxLibrary.exe` |
+| **DLL Library** (for distribution) | `dotnet build OnnxLibrary.Library.csproj --configuration Release --framework net472` | `OnnxLibrary.dll` |
+| **NuGet Package** | `dotnet pack OnnxLibrary.Library.csproj --configuration Release --output ./nupkg` | `*.nupkg` |
+
+### Project Structure
+
+```
+OnnxLibrary/
+├── OnnxLibrary.csproj           # Main executable project
+├── OnnxLibrary.Library.csproj   # Library project (DLL generation)
+├── UniversalYoloProcessor.cs    # Core processor class
+├── ImageDrawer.cs               # Visualization utilities
+├── Detection.cs                 # Result data structures
+├── YamlClasses.cs              # Configuration classes
+├── ImagePreprocessor.cs         # Image preprocessing
+├── Program.cs                   # Console application (excluded from DLL)
+└── DetectionTest.cs            # Testing utilities (excluded from DLL)
+```
+
+---
+
 ## 📦 Installation and Usage
 
 ### Method 1: Direct Use (Executable)
@@ -57,46 +84,159 @@ dotnet build --configuration Release --framework net472
 
 ### Method 2: Build as DLL Library
 
-#### 1. Modify Project File
+#### Option A: Use Dedicated Library Project File (Recommended)
 
-Update `OnnxLibrary.csproj` to generate a library:
+The project includes a dedicated library configuration file `OnnxLibrary.Library.csproj` that automatically excludes application files (`Program.cs`, `DetectionTest.cs`) and generates a clean DLL.
+
+##### 1. Build DLL using Library Project
+
+```bash
+dotnet build OnnxLibrary.Library.csproj --configuration Release --framework net472
+```
+
+This generates `OnnxLibrary.dll` in `bin/Release/net472/` folder.
+
+##### 2. Project Files Comparison
+
+| File | Purpose | Generates |
+|------|---------|-----------|
+| `OnnxLibrary.csproj` | Main executable project | `OnnxLibrary.exe` |
+| `OnnxLibrary.Library.csproj` | Library project | `OnnxLibrary.dll` |
+
+##### 3. Library Project Configuration
+
+The `OnnxLibrary.Library.csproj` file:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>AnyCPU;x64</Platforms>
+    <AssemblyName>OnnxLibrary</AssemblyName>
+    <RootNamespace>OnnxLibrary</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu.Windows" Version="1.18.0" />
+    <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" />
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+  </ItemGroup>
+
+  <!-- Exclude application files when building as library -->
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <Compile Remove="DetectionTest.cs" />
+  </ItemGroup>
+</Project>
+```
+
+#### Option B: Temporary DLL Generation
+
+If you want to temporarily generate a DLL from the main project:
+
+##### 1. Modify Main Project File
+
+Update `OnnxLibrary.csproj` temporarily:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <OutputType>Library</OutputType>  <!-- Change from Exe to Library -->
-    <LangVersion>7.3</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.18.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu.Windows" Version="1.18.0" />
     <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" />
     <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
+  
+  <!-- Exclude application files -->
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <Compile Remove="DetectionTest.cs" />
+  </ItemGroup>
 </Project>
 ```
 
-#### 2. Build DLL
+##### 2. Build DLL
 
 ```bash
 dotnet build --configuration Release --framework net472
 ```
 
-This will generate `OnnxLibrary.dll` in `bin/Release/net472/` folder.
+**Note**: Remember to revert the changes if you want to use the executable version again.
 
-#### 3. Use DLL in Your Project
+---
+
+### Method 3: Build Commands Summary
+
+For your convenience, here are the quick build commands:
+
+#### Build Executable (for testing and development)
+```bash
+# Build main application
+dotnet build --configuration Release --framework net472
+# Output: bin/Release/net472/OnnxLibrary.exe
+```
+
+#### Build DLL Library (for distribution)
+```bash
+# Build library using dedicated project file
+dotnet build OnnxLibrary.Library.csproj --configuration Release --framework net472
+# Output: bin/Release/net472/OnnxLibrary.dll
+```
+
+---
+
+#### Use DLL in Your Project
 
 ##### Add Reference
 
 ```xml
-<ProjectReference Include="path/to/OnnxLibrary.csproj" />
-<!-- OR -->
+<!-- Option 1: Project Reference (if in same solution) -->
+<ProjectReference Include="path/to/OnnxLibrary.Library.csproj" />
+
+<!-- Option 2: DLL Reference -->
 <Reference Include="OnnxLibrary">
-  <HintPath>path/to/OnnxLibrary.dll</HintPath>
+  <HintPath>path/to/bin/Release/net472/OnnxLibrary.dll</HintPath>
 </Reference>
+
+<!-- Option 3: Package Reference (if using NuGet) -->
+<PackageReference Include="OnnxLibrary" Version="1.0.0" />
+```
+
+##### Required Dependencies
+
+When using the DLL, ensure these dependencies are available in your target project:
+
+```xml
+<PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu.Windows" Version="1.18.0" />
+<PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
+<PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" />
+<PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+<PackageReference Include="YamlDotNet" Version="16.3.0" />
+```
+
+##### Distribution Package
+
+When distributing the DLL, include these files:
+```
+OnnxLibrary.dll                          # Main library
+OnnxLibrary.pdb                          # Debug symbols (optional)
+Microsoft.ML.OnnxRuntime.dll             # ONNX Runtime
+onnxruntime.dll                          # ONNX Runtime native
+onnxruntime_providers_*.dll              # ONNX Runtime providers
+OpenCvSharp.dll                          # OpenCV Sharp
+YamlDotNet.dll                           # YAML parser
+System.*.dll                             # System dependencies
 ```
 
 ##### Code Example
@@ -184,18 +324,35 @@ using (var processor = new UniversalYoloProcessor(modelPath, yamlPath, "gpu",
 }
 ```
 
-### Method 3: NuGet Package (Advanced)
+### Method 4: NuGet Package (Advanced)
 
 #### 1. Create NuGet Package
 
 ```bash
-dotnet pack --configuration Release --output ./nupkg
+# Create NuGet package from library project
+dotnet pack OnnxLibrary.Library.csproj --configuration Release --output ./nupkg
 ```
 
 #### 2. Install Package
 
 ```bash
 dotnet add package OnnxLibrary --source ./nupkg
+```
+
+#### 3. Package Configuration
+
+To create a proper NuGet package, add these properties to `OnnxLibrary.Library.csproj`:
+
+```xml
+<PropertyGroup>
+  <PackageId>OnnxLibrary</PackageId>
+  <Version>1.0.0</Version>
+  <Authors>Your Name</Authors>
+  <Description>A .NET library for YOLO v11 image classification and object detection</Description>
+  <PackageTags>YOLO;ONNX;ComputerVision;ObjectDetection;ImageClassification</PackageTags>
+  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  <RepositoryUrl>https://github.com/Timmy0618/Sharp-Onnx-</RepositoryUrl>
+</PropertyGroup>
 ```
 将您的 ONNX 模型文件放置在 `models/` 目录中：
 ```
