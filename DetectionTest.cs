@@ -49,19 +49,19 @@ namespace OnnxLibrary
                 // 检查文件是否存在
                 if (!File.Exists(modelPath))
                 {
-                    Console.WriteLine($"❌ 模型文件不存在: {modelPath}");
+                    Console.WriteLine($"❌ Model file not found: {modelPath}");
                     return;
                 }
                 
                 if (!File.Exists(yamlPath))
                 {
-                    Console.WriteLine($"❌ 类别文件不存在: {yamlPath}");
+                    Console.WriteLine($"❌ Class file not found: {yamlPath}");
                     return;
                 }
                 
                 if (!Directory.Exists(testImagePath))
                 {
-                    Console.WriteLine($"❌ 测试图片目录不存在: {testImagePath}");
+                    Console.WriteLine($"❌ Test image directory not found: {testImagePath}");
                     return;
                 }
                 
@@ -69,24 +69,24 @@ namespace OnnxLibrary
                 string[] imageFiles = GetSupportedImageFiles(testImagePath);
                 if (imageFiles.Length == 0)
                 {
-                    Console.WriteLine($"❌ 在 {testImagePath} 中没有找到支持的图片文件");
-                    Console.WriteLine($"   支持格式: {string.Join(", ", SupportedImageExtensions.Select(ext => ext.Replace("*", "")))}");
+                    Console.WriteLine($"❌ No supported image files found in {testImagePath}");
+                    Console.WriteLine($"   Supported formats: {string.Join(", ", SupportedImageExtensions.Select(ext => ext.Replace("*", "")))}");
                     return;
                 }
                 
                 string testImage = imageFiles[0];
-                Console.WriteLine($"✅ 使用测试图片: {Path.GetFileName(testImage)}");
+                Console.WriteLine($"✅ Using test image: {Path.GetFileName(testImage)}");
                 
                 // 创建输出目录
                 Directory.CreateDirectory(outputPath);
                 
-                // 测试统一处理器
-                Console.WriteLine("🔄 初始化统一 YOLO 处理器...");
+                // Test unified processor
+                Console.WriteLine("🔄 Initializing Universal YOLO Processor...");
                 using (var processor = new UniversalYoloProcessor(modelPath, yamlPath, "cpu", 0.5f, 0.45f))
                 {
-                    Console.WriteLine("🔄 处理图像...");
+                    Console.WriteLine("🔄 Processing image...");
                     var detections = processor.ProcessImage(testImage);
-                    Console.WriteLine($"✅ 处理完成，发现 {detections.Count} 个目标");
+                    Console.WriteLine($"✅ Processing completed, found {detections.Count} objects");
                     
                     foreach (var detection in detections)
                     {
@@ -94,43 +94,43 @@ namespace OnnxLibrary
                                         $"[{detection.X:F0}, {detection.Y:F0}, {detection.Width:F0}, {detection.Height:F0}]");
                     }
                     
-                    // 测试绘制结果
+                    // Test drawing results
                     if (detections.Count > 0)
                     {
-                        Console.WriteLine("🔄 绘制结果...");
+                        Console.WriteLine("🔄 Drawing results...");
                         string outputImagePath = Path.Combine(outputPath, $"result_{Path.GetFileName(testImage)}");
                         
-                        // 对于分类模型，不绘制边界框，只显示结果
+                        // For classification models, don't draw bounding boxes, just show results
                         if (processor.ModelInfo.Type == ModelType.Classification)
                         {
-                            Console.WriteLine($"   分类结果: {detections[0].ClassName} (置信度: {detections[0].Confidence:F3})");
-                            Console.WriteLine($"   注意: 分类模型不绘制边界框");
+                            Console.WriteLine($"   Classification result: {detections[0].ClassName} (Confidence: {detections[0].Confidence:F3})");
+                            Console.WriteLine($"   Note: Classification model does not draw bounding boxes");
                         }
                         else
                         {
                             ImageDrawer.DrawDetections(testImage, detections, outputImagePath);
-                            Console.WriteLine($"✅ 结果已保存到: {outputImagePath}");
+                            Console.WriteLine($"✅ Results saved to: {outputImagePath}");
                         }
                     }
                 }
                 
-                Console.WriteLine("🎉 所有测试通过！");
+                Console.WriteLine("🎉 All tests passed!");
                 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ 测试失败: {ex.Message}");
-                Console.WriteLine($"   详细信息: {ex.StackTrace}");
+                Console.WriteLine($"❌ Test failed: {ex.Message}");
+                Console.WriteLine($"   Details: {ex.StackTrace}");
             }
         }
         
         public static void PrintSystemInfo()
         {
-            Console.WriteLine("=== 系统信息 ===");
-            Console.WriteLine($"操作系统: {Environment.OSVersion}");
-            Console.WriteLine($".NET 版本: {Environment.Version}");
-            Console.WriteLine($"处理器数量: {Environment.ProcessorCount}");
-            Console.WriteLine($"工作目录: {Environment.CurrentDirectory}");
+            Console.WriteLine("=== System Information ===");
+            Console.WriteLine($"Operating System: {Environment.OSVersion}");
+            Console.WriteLine($".NET Version: {Environment.Version}");
+            Console.WriteLine($"Processor Count: {Environment.ProcessorCount}");
+            Console.WriteLine($"Working Directory: {Environment.CurrentDirectory}");
             Console.WriteLine();
         }
     }

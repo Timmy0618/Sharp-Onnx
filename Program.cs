@@ -33,11 +33,11 @@ namespace OnnxLibrary
             string outputPath = "./output"; // 检测结果输出路径
             string device = "cpu"; // 可选择 "cpu" 或 "gpu"
 
-            Console.WriteLine("=== ONNX Library - Universal YOLO v11 处理器 ===");
-            Console.WriteLine($"模型路径: {modelPath}");
-            Console.WriteLine($"图片目录: {directoryPath}");
-            Console.WriteLine($"输出目录: {outputPath}");
-            Console.WriteLine($"支持格式: {string.Join(", ", SupportedImageExtensions.Select(ext => ext.Replace("*", "")))}");
+            Console.WriteLine("=== ONNX Library - Universal YOLO v11 Processor ===");
+            Console.WriteLine($"Model Path: {modelPath}");
+            Console.WriteLine($"Image Directory: {directoryPath}");
+            Console.WriteLine($"Output Directory: {outputPath}");
+            Console.WriteLine($"Supported Formats: {string.Join(", ", SupportedImageExtensions.Select(ext => ext.Replace("*", "")))}");
             Console.WriteLine();
 
             try
@@ -59,7 +59,7 @@ namespace OnnxLibrary
                     return;
                 }
 
-                Console.WriteLine($"找到 {imagePaths.Length} 张图片");
+                Console.WriteLine($"Found {imagePaths.Length} images");
 
                 RunUniversalProcessing(imagePaths, modelPath, yamlPath, device, outputPath);
             }
@@ -92,13 +92,13 @@ namespace OnnxLibrary
                 }
             }
             
-            // 显示找到的格式统计
+            // Display found format statistics
             if (formatCount.Count > 0)
             {
-                Console.WriteLine("找到的图片格式统计:");
+                Console.WriteLine("Found image format statistics:");
                 foreach (var kvp in formatCount.OrderBy(x => x.Key))
                 {
-                    Console.WriteLine($"  {kvp.Key}: {kvp.Value} 张");
+                    Console.WriteLine($"  {kvp.Key}: {kvp.Value} files");
                 }
             }
             
@@ -115,7 +115,7 @@ namespace OnnxLibrary
             Stopwatch processTimer = new Stopwatch();
             processTimer.Start();
 
-            Console.WriteLine("初始化统一 YOLO 处理器...");
+            Console.WriteLine("Initializing Universal YOLO Processor...");
             
             using (var processor = new UniversalYoloProcessor(modelPath, yamlPath, device, 0.1f, 0.1f))
             {
@@ -127,27 +127,27 @@ namespace OnnxLibrary
                     try
                     {
                         string fileName = Path.GetFileName(imagePath);
-                        Console.WriteLine($"\n处理图像: {fileName}");
+                        Console.WriteLine($"\nProcessing image: {fileName}");
                         
                         var detections = processor.ProcessImage(imagePath);
                         
                         if (processor.ModelInfo.Type == ModelType.Classification)
                         {
-                            // 分类结果
+                            // Classification results
                             if (detections.Count > 0)
                             {
                                 var result = detections[0];
-                                Console.WriteLine($"  分类结果: {result.ClassName} (置信度: {result.Confidence:F3})");
+                                Console.WriteLine($"  Classification result: {result.ClassName} (Confidence: {result.Confidence:F3})");
                             }
                             else
                             {
-                                Console.WriteLine("  未找到有效分类结果");
+                                Console.WriteLine("  No valid classification result found");
                             }
                         }
                         else if (processor.ModelInfo.Type == ModelType.Detection)
                         {
-                            // 检测结果
-                            Console.WriteLine($"  检测到 {detections.Count} 个目标:");
+                            // Detection results
+                            Console.WriteLine($"  Detected {detections.Count} objects:");
                             
                             foreach (var detection in detections)
                             {
@@ -155,12 +155,12 @@ namespace OnnxLibrary
                                                 $"[{detection.X:F0}, {detection.Y:F0}, {detection.Width:F0}, {detection.Height:F0}]");
                             }
 
-                            // 绘制并保存检测结果
+                            // Draw and save detection results
                             if (detections.Count > 0)
                             {
                                 string outputImagePath = Path.Combine(outputPath, $"result_{fileName}");
                                 ImageDrawer.DrawDetections(imagePath, detections, outputImagePath);
-                                Console.WriteLine($"    结果已保存到: {outputImagePath}");
+                                Console.WriteLine($"    Results saved to: {outputImagePath}");
                             }
                         }
 
@@ -168,20 +168,20 @@ namespace OnnxLibrary
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"  处理失败: {ex.Message}");
+                        Console.WriteLine($"  Processing failed: {ex.Message}");
                     }
                     
                     processedCount++;
                 }
 
-                Console.WriteLine($"\n=== 处理完成 ===");
-                Console.WriteLine($"总计处理: {processedCount} 张图片");
-                Console.WriteLine($"成功处理: {successCount} 张图片");
-                Console.WriteLine($"模型类型: {processor.ModelInfo.Type}");
+                Console.WriteLine($"\n=== Processing Complete ===");
+                Console.WriteLine($"Total processed: {processedCount} images");
+                Console.WriteLine($"Successfully processed: {successCount} images");
+                Console.WriteLine($"Model type: {processor.ModelInfo.Type}");
             }
 
             processTimer.Stop();
-            Console.WriteLine($"总处理时间: {processTimer.Elapsed.TotalSeconds:F2} 秒");
+            Console.WriteLine($"Total processing time: {processTimer.Elapsed.TotalSeconds:F2} seconds");
         }
     }
 }

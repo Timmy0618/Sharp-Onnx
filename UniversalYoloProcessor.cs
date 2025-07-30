@@ -57,11 +57,11 @@ namespace OnnxLibrary
             // 自动分析模型类型
             _modelInfo = AnalyzeModel();
             
-            Console.WriteLine($"🔍 模型分析结果:");
-            Console.WriteLine($"   类型: {_modelInfo.Type}");
-            Console.WriteLine($"   输入尺寸: {_modelInfo.InputWidth}x{_modelInfo.InputHeight}");
-            Console.WriteLine($"   类别数量: {_modelInfo.NumClasses}");
-            Console.WriteLine($"   描述: {_modelInfo.Description}");
+            Console.WriteLine($"🔍 Model Analysis Result:");
+            Console.WriteLine($"   Type: {_modelInfo.Type}");
+            Console.WriteLine($"   Input Size: {_modelInfo.InputWidth}x{_modelInfo.InputHeight}");
+            Console.WriteLine($"   Class Count: {_modelInfo.NumClasses}");
+            Console.WriteLine($"   Description: {_modelInfo.Description}");
         }
 
         private ModelInfo AnalyzeModel()
@@ -87,15 +87,15 @@ namespace OnnxLibrary
                 // 形状为 [batch, classes] -> 分类模型
                 modelInfo.Type = ModelType.Classification;
                 modelInfo.NumClasses = outputShape[1];
-                modelInfo.Description = $"YOLO v11 分类模型，输出 {modelInfo.NumClasses} 个类别";
+                modelInfo.Description = $"YOLO v11 classification model, outputs {modelInfo.NumClasses} classes";
             }
             else if (outputShape.Length == 3)
             {
                 // 形状为 [batch, features, predictions] -> 检测模型
-                // 对于 YOLO v11: features = 4 (bbox) + num_classes
+                // For YOLO v11: features = 4 (bbox) + num_classes
                 modelInfo.Type = ModelType.Detection;
                 modelInfo.NumClasses = outputShape[1] - 4; // 减去 4 个边界框坐标
-                modelInfo.Description = $"YOLO v11 检测模型，输出 {outputShape[2]} 个预测，{modelInfo.NumClasses} 个类别";
+                modelInfo.Description = $"YOLO v11 detection model, outputs {outputShape[2]} predictions, {modelInfo.NumClasses} classes";
             }
             else
             {
