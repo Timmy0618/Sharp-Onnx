@@ -26,3 +26,4 @@ obj/
 *.userosactivesettings.json
 # User-generated comments
 # Subversion_ignore rules
+*.bmp
